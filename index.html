@@ -1,0 +1,157 @@
+
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>AI 이미지 프롬프트 및 생성기 - 바이브코딩랩</title>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@100..900&family=Roboto:wght@100;300;400;500;700;900&family=Open+Sans:wght@300;400;600;700;800&family=Lato:wght@100;300;400;700;900&family=Montserrat:wght@100;200;300;400;500;600;700;800;900&family=Oswald:wght@200;300;400;500;600;700;800;900&family=Playfair+Display:wght@400;500;600;700;800;900&family=Source+Code+Pro:wght@200;300;400;500;600;700;800;900&family=Nanum+Gothic:wght@400;700;800&family=Gowun+Batang&family=Jua&family=Do+Hyeon&family=Black+Han+Sans&family=East+Sea+Dokdo&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/remixicon/4.6.0/remixicon.min.css">
+    <script src="https://cdn.tailwindcss.com/3.4.16"></script>
+    <script>
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              primary: "#8b5cf6", /* 더 진한 indigo */
+              "primary-dark": "#7c3aed", /* 약간 더 어두운 primary */
+              secondary: "#10b981", /* 더 진한 emerald */
+              slate: { 50: '#f8fafc', 100: '#f1f5f9', 200: '#e2e8f0', 300: '#cbd5e1', 400: '#94a3b8', 500: '#64748b', 600: '#475569', 700: '#334155', 800: '#1e293b', 900: '#0f172a', 950: '#020617' }
+            },
+            borderRadius: { // extend 안에 정의하여 기본값을 유지하면서 추가/오버라이드
+              'sm': '0.125rem', // 2px
+              'md': '0.375rem', // 6px
+              'lg': '0.5rem',   // 8px (Button 컴포넌트에서 사용)
+              'xl': '0.75rem',  // 12px
+              '2xl': '1rem',    // 16px
+              '3xl': '1.5rem',  // 24px
+              'full': '9999px',
+              'button': '0.5rem' // Custom button radius (8px)
+            },
+            fontFamily: {
+              sans: ['"Inter"', '"Noto Sans KR"', 'sans-serif']
+            }
+          }
+        }
+      }; // <-- 여기에 세미콜론 추가
+    </script>
+    <style>
+      :where([class^="ri-"])::before { content: "\f3c2"; }
+      html {
+          font-size: 16px; /* 기본 폰트 크기 명시 */
+      }
+      body {
+        font-family: 'Inter', 'Noto Sans KR', sans-serif;
+        /* Tailwind dark mode will handle this based on 'dark' class on HTML */
+        /* background-color: #020617; */
+        /* color: #f8fafc; */
+      }
+      .tech-grid {
+        background-image: radial-gradient(circle at 2px 2px, rgba(59, 130, 246, 0.1) 1px, transparent 0);
+        background-size: 40px 40px;
+        background-attachment: fixed;
+      }
+      /* 리액트 앱 내부의 기존 헤더/푸터 숨기기 (중복 방지) */
+      #root header, #root footer {
+          display: none !important;
+      }
+      /* 리액트 앱 내부 컨테이너 강제 확장 (좌우 공백 감소) */
+      /* `max-w-6xl` override 제거, 스크롤바가 화면 밖으로 밀려나는 문제 방지 */
+      /* This rule will be handled by the App.tsx content wrapper now */
+      /* #root .max-w-7xl, #root .max-w-5xl, #root .max-w-4xl, #root .max-w-screen-xl, #root .container {
+          max-width: 96% !important;
+          width: 96% !important;
+      } */
+      /* Custom scrollbar styles */
+      .custom-scrollbar::-webkit-scrollbar {
+          width: 8px; /* Width of the scrollbar */
+      }
+
+      .custom-scrollbar::-webkit-scrollbar-track {
+          background: #e2e8f0; /* Light gray track */
+          border-radius: 10px;
+      }
+      .dark .custom-scrollbar::-webkit-scrollbar-track {
+          background: #334155; /* Dark gray track in dark mode */
+      }
+
+      .custom-scrollbar::-webkit-scrollbar-thumb {
+          background: #94a3b8; /* Medium gray thumb */
+          border-radius: 10px;
+      }
+      .dark .custom-scrollbar::-webkit-scrollbar-thumb {
+          background: #64748b; /* Darker gray thumb in dark mode */
+      }
+
+      .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+          background: #64748b; /* Slightly darker on hover */
+      }
+      .dark .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+          background: #94a3b8; /* Slightly lighter on hover in dark mode */
+      }
+    </style>
+    <link rel="stylesheet" href="/index.css">
+<script type="importmap">
+{
+  "imports": {
+    "react": "https://esm.sh/react@^19.2.3",
+    "react-dom/": "https://esm.sh/react-dom@^19.2.3/",
+    "react/": "https://esm.sh/react@^19.2.3/",
+    "@google/genai": "https://esm.sh/@google/genai@^1.34.0"
+  }
+}
+</script>
+</head>
+<body class="dark tech-grid antialiased selection:bg-primary selection:text-white bg-slate-950 text-slate-50">
+    <!-- 헤더 섹션 (메인 페이지와 통일) -->
+    <header class="bg-slate-950/80 backdrop-blur-md border-b border-slate-800 sticky top-0 z-50">
+        <div class="container mx-auto px-4 py-4 flex justify-between items-center">
+            <a href="index.html" class="flex items-center gap-3">
+                <img src="https://static.readdy.ai/image/44bc93fdb7ef51b226b65177596745ae/2a757f0e7ad5f5b6553c8f682c39ea79.png" alt="바이브코딩랩 로고" class="h-10 w-auto rounded-lg">
+                <span class="text-xl font-bold text-white tracking-tight">VibeCodingLab</span>
+            </a>
+            <nav class="hidden md:flex space-x-8">
+                <a href="index.html" class="text-slate-300 hover:text-white font-medium transition-colors">홈</a>
+                <a href="index.html#programs" class="text-slate-300 hover:text-white font-medium transition-colors">프로그램</a>
+                <a href="index.html#guide" class="text-slate-300 hover:text-white font-medium transition-colors">사용 가이드</a>
+                <a href="index.html#contact" class="text-slate-300 hover:text-white font-medium transition-colors">함께하기</a>
+            </nav>
+            <a href="https://www.youtube.com/channel/UCUgHa5wpVuCmb6w1FMAQ1eg" target="_blank" class="flex items-center bg-red-600 text-white px-4 py-2 !rounded-button hover:bg-red-700 transition duration-300 whitespace-nowrap">
+                <div class="w-5 h-5 flex items-center justify-center"><i class="ri-youtube-fill"></i></div>
+                유튜브 채널
+            </a>
+        </div>
+    </header>
+
+    <div id="root" class="min-h-screen"></div>
+
+    <!-- 푸터 (메인 페이지와 통일) -->
+    <footer class="bg-slate-950 text-white py-12 border-t border-slate-800">
+        <div class="container mx-auto px-4">
+            <div class="flex flex-col md:flex-row justify-between items-center">
+                <div class="mb-6 md:mb-0">
+                    <a href="index.html" class="flex items-center">
+                        <img src="https://static.readdy.ai/image/44bc93fdb7ef51b226b65177596745ae/2a757f0e7ad5f5b6553c8f682c39ea79.png" alt="바이브코딩랩 로고" class="h-10 w-auto brightness-200">
+                    </a>
+                    <p class="mt-2 text-slate-400">AI로 누구나 쉽게 코딩하는 세상</p>
+                </div>
+                <div class="flex flex-col items-center md:items-end">
+                    <div class="flex space-x-4 mb-4">
+                        <a href="https://www.youtube.com/channel/UCUgHa5wpVuCmb6w1FMAQ1eg" target="_blank" class="w-10 h-10 bg-slate-800 rounded-full flex items-center justify-center hover:bg-red-600 transition duration-300">
+                            <div class="w-5 h-5 flex items-center justify-center"><i class="ri-youtube-fill"></i></div>
+                        </a>
+                        <a href="mailto:contact@vibecoding.com" class="w-10 h-10 bg-slate-800 rounded-full flex items-center justify-center hover:bg-blue-500 transition duration-300">
+                            <div class="w-5 h-5 flex items-center justify-center"><i class="ri-mail-line"></i></div>
+                        </a>
+                    </div>
+                    <p class="text-slate-400">ⓒ 2025 바이브코딩랩. All Rights Reserved.</p>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script type="module" src="/index.tsx"></script>
+</body>
+</html>

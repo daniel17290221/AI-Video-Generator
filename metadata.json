@@ -1,0 +1,5 @@
+{
+  "name": "AI Video Generator",
+  "description": "An application for generating videos from text prompts (T2V) or image prompts (I2V) using Google's Veo models.",
+  "requestFramePermissions": []
+}
