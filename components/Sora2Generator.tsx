@@ -827,7 +827,7 @@ const Sora2Generator: React.FC<Sora2GeneratorProps> = ({ kieAIApiKey }) => {
           </div>
           <p className="text-sm text-slate-400 mt-2">생성될 프레임 수 (비디오 길이).</p>
         </div>
-      )}
+      {/* Removed the extraneous `)}` from here */}
 
       {/* Input - Size (Quality) */}
       <div className="flex flex-col">
